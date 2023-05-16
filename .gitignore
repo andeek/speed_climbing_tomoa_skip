@@ -20,6 +20,7 @@
 
 # RStudio files
 .Rproj.user/
+speed_climbing_tomoa_skip.Rproj
 
 # produced vignettes
 vignettes/*.html
