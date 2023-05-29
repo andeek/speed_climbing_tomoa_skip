@@ -26,6 +26,7 @@ df_final_w <- data.frame()
 for(i in seq_len(nrow(events))) {
   e_id <- events[i, "event_id"]
   if(!is.na(e_id)) {
+    
     ## this is a speed event
     ## navigate to results
     ## mens times ----
