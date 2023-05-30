@@ -34,7 +34,6 @@ w_times_update <- w_times |>
 m_hm <- hashmap()
 w_hm <- hashmap()
 
-# FIXME?
 # The earliest event we have tomoa skip data for is 1048, so can assume all earlier events as false
 m_times_update$tomoa_skip[as.double(m_times_update$event_id) < 1048] <- FALSE
 w_times_update$tomoa_skip[as.double(w_times_update$event_id) < 1048] <- FALSE
@@ -44,18 +43,24 @@ m_times_update <-  m_times_update[order(as.double(m_times_update$event_id)), ]
 w_times_update <- w_times_update[order(as.double(w_times_update$event_id)), ]
 
 # For mens data
-# tomoa skip is string type currently, so convert to bool
 m_times_update$tomoa_skip <- as.logical(m_times_update$tomoa_skip)
 for(i in 1:nrow(m_times_update)){
   
   row <- m_times_update[i, ]
   full_name <- paste(row$fname, row$lname, sep = " ")
   
-  # Check if tomoa_skip is NA, true, and query is null
-  # If so, we can had climber to hash map as the climber has not been seen
-  # doing the skip yet
+
+  
+  # Check if tomoa skip is trull and querying the climber's name in the hashmap is not null.
+  
   if (!is.na(row$tomoa_skip) && row$tomoa_skip && is.null(query(m_hm, full_name))) {
     insert(m_hm, full_name, row$event_id)
+  }
+  
+  # 
+  else if(is.na(row$tomoa_skip) && is.null(query(m_hm, full_name))
+          && (row$fname %in% m_tomoa_skip_data$fname) && (row$lname %in% m_tomoa_skip_data$lname)){
+    m_times_update[i, "tomoa_skip"] <- FALSE
   }
   
   # If query is not null, compare event_id values
@@ -70,17 +75,22 @@ for(i in 1:nrow(m_times_update)){
 
 # For womens data (works the same)
 w_times_update$tomoa_skip <- as.logical(w_times_update$tomoa_skip)
-for(i in 1:nrow(m_times_update)){
+for(i in 1:nrow(w_times_update)){
   
   row <- w_times_update[i, ]
   full_name <- paste(row$fname, row$lname, sep = " ")
 
-  if (!is.na(row$tomoa_skip) && row$tomoa_skip && is.null(query(m_hm, full_name))) {
-    insert(m_hm, full_name, row$event_id)
+  if (!is.na(row$tomoa_skip) && row$tomoa_skip && is.null(query(w_hm, full_name))) {
+    insert(w_hm, full_name, row$event_id)
+  }
+  
+  else if(is.na(row$tomoa_skip) && is.null(query(w_hm, full_name))
+          && (row$fname %in% w_tomoa_skip_data$fname) && (row$lname %in% w_tomoa_skip_data$lname)){
+    w_times_update[i, "tomoa_skip"] <- FALSE
   }
 
-  else if (!is.null(query(m_hm, full_name))) {
-    if (as.double(row$event_id) >= as.double(query(m_hm, full_name))) {
+  else if (!is.null(query(w_hm, full_name))) {
+    if (as.double(row$event_id) >= as.double(query(w_hm, full_name))) {
       w_times_update[i, "tomoa_skip"] <- TRUE
     }
   }
