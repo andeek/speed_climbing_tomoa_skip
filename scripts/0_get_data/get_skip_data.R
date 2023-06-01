@@ -57,6 +57,7 @@ for(i in 1:nrow(m_times_update)){
   }
   
   #FIXME Safe assumption?
+  
   # Checks if value is NA and the query returns null. Then check if we have gathered data on this climber.
   # If so, set skip val to false.
   else if(is.na(row$tomoa_skip) && is.null(query(m_hm, full_name))
