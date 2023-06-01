@@ -25,10 +25,17 @@ w_tomoa_skip_yearly <- w_times_update |>
             avg_skip_true = mean(final[tomoa_skip == TRUE], na.rm = TRUE),
             avg_skip_false = mean(final[tomoa_skip == FALSE], na.rm = TRUE),
             avg_final = mean(final, na.rm = TRUE),
-            count = sum(tomoa_skip == TRUE & (fall_qual | fall_final | fall_lane_a | fall_lane_b |
-                                       fall_quarter | fall_semi | fall_small_final | fall_big_final |
-                                         fall_first_round))
+            total_falls = sum(fall_qual) + sum(fall_final) +
+              sum(fall_lane_a) + sum(fall_lane_b) + sum(fall_quarter) +
+              sum(fall_semi) + sum(fall_small_final) + sum(fall_big_final) + 
+              sum(fall_first_round)
             )
+
+
+
+
+
+
             
 
 
