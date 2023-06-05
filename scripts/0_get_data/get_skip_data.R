@@ -5,8 +5,13 @@ library(r2r)
 
 # Import data from Google Drive
 #Commented out for now
-#m_tomoa_skip_data <- read_sheet('https://docs.google.com/spreadsheets/d/15vR-ZX_4U7oRExClp_SWz88g3hWKRGjETQssIACAgSk/edit?usp=sharing')
-#w_tomoa_skip_data <- read_sheet('https://docs.google.com/spreadsheets/d/19m6dNDvdVuqtaQsVS0mt8r2iElL7Pe95vkm6cWiPq_E/edit?usp=sharing')
+m_tomoa_skip_data <- read_sheet('https://docs.google.com/spreadsheets/d/15vR-ZX_4U7oRExClp_SWz88g3hWKRGjETQssIACAgSk/edit?usp=sharing', col_names = TRUE, col_types = "dcTTddcccl")
+w_tomoa_skip_data <- read_sheet('https://docs.google.com/spreadsheets/d/19m6dNDvdVuqtaQsVS0mt8r2iElL7Pe95vkm6cWiPq_E/edit?usp=sharing', col_names = TRUE, col_types = "dcTTddcccl")
+
+# load
+load("data/mTimes.Rdata")
+load("data/wTimes.Rdata")
+load("data/events.Rdata")
 
 #make copies to update to (easier for testing)
 m_times_update <- m_times
@@ -16,8 +21,7 @@ w_times_update <- w_times
 m_times_update <- m_times |>
   mutate(event_id = as.numeric(event_id)) |>
   left_join(
-            m_tomoa_skip_data |>
-            select(fname, lname, event_id, tomoa_skip),
+            m_tomoa_skip_data |> select(fname, lname, event_id, tomoa_skip),
             by = c("fname", "lname", "event_id"),
             ) |>
   mutate(tomoa_skip = ifelse(tomoa_skip == "NULL", NA, tomoa_skip))
@@ -33,9 +37,9 @@ w_times_update <- w_times |>
 
 #Join with events to get years and dates
 m_times_update <- m_times_update |>
-  left_join(events, by="event_id")
+  left_join(events |> mutate(event_id = as.numeric(event_id)), by="event_id")
 w_times_update <- w_times_update |>
-  left_join(events, by = "event_id")
+  left_join(events |> mutate(event_id = as.numeric(event_id)), by = "event_id")
 
 #Create empty hashmaps for mens and womens
 m_hm <- hashmap()
@@ -102,8 +106,12 @@ for(i in 1:nrow(w_times_update)){
       w_times_update[i, "tomoa_skip"] <- TRUE
     }
   }
-  
 }
+
+## save objects
+save(m_times_update, file = "data/mTimes_skip.Rdata")
+save(w_times_update, file = "data/wTimes_skip.Rdata")
+
 
 
 
