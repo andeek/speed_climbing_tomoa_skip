@@ -45,13 +45,13 @@ w_times_update <- w_times_update |>
 m_hm <- hashmap()
 w_hm <- hashmap()
 
-# The earliest event we have tomoa skip data for is 1048, so can assume all earlier events as false
-# m_times_update$tomoa_skip[as.double(m_times_update$event_id) < 1048] <- FALSE
-# w_times_update$tomoa_skip[as.double(w_times_update$event_id) < 1048] <- FALSE
+# The earliest date we have data for is 2018-04-21, so can assume all earlier events as false
+m_times_update$tomoa_skip[as.double(m_times_update$start_date) < as.Date("2018-04-21")] <- FALSE
+w_times_update$tomoa_skip[as.double(w_times_update$start_date) < as.Date("2018-04-21")] <- FALSE
 
 # Sort the merged data set by event id so we can properly compare event IDs
-m_times_update <-  m_times_update[order(as.double(m_times_update$start_date)), ]
-w_times_update <- w_times_update[order(as.double(w_times_update$start_date)), ]
+m_times_update <-  m_times_update[order((m_times_update$start_date)), ]
+w_times_update <- w_times_update[order((w_times_update$start_date)), ]
 
 # For mens data
 # Current type is string, so convert to bool
@@ -67,7 +67,15 @@ for(i in 1:nrow(m_times_update)){
     insert(m_hm, full_name, row$start_date)
   }
   
-  #FIXME Safe assumption?
+  # Checks if tomoa skip is not NA and FALSE. Additionally, checks if the query to the hm is NOT null.
+  # This is for the rare case that a climber uses the skip and then later switches to not using the skip.
+  # This conditional will "reset" their value in the hm so we can fill in further dates up to their 
+  # next recorded skip as FALSE.
+  else if(!is.na(row$tomoa_skip) && !row$tomoa_skip && !is.null(query(m_hm, full_name))) {
+    insert(m_hm, full_name, NULL)
+    m_times_update[i, "tomoa_skip"] <- FALSE
+  }
+  
   # Checks if value is NA and the query returns null. Then check if we have gathered data on this climber.
   # If so, set skip val to false.
   else if(is.na(row$tomoa_skip) && is.null(query(m_hm, full_name))
@@ -95,7 +103,10 @@ for(i in 1:nrow(w_times_update)){
   if (!is.na(row$tomoa_skip) && row$tomoa_skip && is.null(query(w_hm, full_name))) {
     insert(w_hm, full_name, row$start_date)
   }
-  
+  else if(!is.na(row$tomoa_skip) && !row$tomoa_skip && !is.null(query(w_hm, full_name))) {
+    insert(w_hm, full_name, NULL)
+    w_times_update[i, "tomoa_skip"] <- FALSE
+  }
   else if(is.na(row$tomoa_skip) && is.null(query(w_hm, full_name))
           && (row$fname %in% w_tomoa_skip_data$fname) && (row$lname %in% w_tomoa_skip_data$lname)){
     w_times_update[i, "tomoa_skip"] <- FALSE
