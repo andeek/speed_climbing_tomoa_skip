@@ -23,6 +23,8 @@ df_overall_w <- data.frame()
 df_qual_w <- data.frame()
 df_final_w <- data.frame()
 
+
+
 for(i in seq_len(nrow(events))) {
   e_id <- events[i, "event_id"]
   if(!is.na(e_id)) {
@@ -48,9 +50,9 @@ for(i in seq_len(nrow(events))) {
           mutate(false_start_qual = tolower(best_qual) == "false start") |>
           mutate(fall_final = tolower(final) == "fall") |>
           mutate(false_start_final = tolower(final) == "false start") |>
-          mutate(best_qual = ifelse(tolower(best_qual) == "fall", NA, best_qual),
+          mutate(best_qual = ifelse(tolower(best_qual) == "fall", NA, gsub("[^0-9.]", "", best_qual)),
                  final = ifelse(tolower(final) == "fall", NA, final)) |>
-          mutate(best_qual = ifelse(class(best_qual) == "character", parse_number(best_qual), best_qual)) |>
+          mutate(best_qual = ifelse(is.na(best_qual), NA, as.numeric(best_qual))) |>
           mutate(final = as.numeric(final)) |>
           mutate(sex = "M", event_id = e_id) |>
           bind_rows(df_overall_m) -> df_overall_m
@@ -60,8 +62,8 @@ for(i in seq_len(nrow(events))) {
           mutate(fname = tolower(fname), lname = tolower(lname)) |>
           mutate(fall_qual = tolower(best_qual) == "fall") |>
           mutate(false_start_qual = tolower(best_qual) == "false start") |>
-          mutate(best_qual = ifelse(tolower(best_qual) == "fall", NA, best_qual)) |>
-          mutate(best_qual = ifelse(class(best_qual) == "character", parse_number(best_qual), best_qual)) |>
+          mutate(best_qual = ifelse(tolower(best_qual) == "fall", NA, gsub("[^0-9.]", "", best_qual))) |>
+          mutate(best_qual = ifelse(is.na(best_qual), NA, as.numeric(best_qual))) |>
           mutate(final = NA) |>
           mutate(sex = "M", event_id = e_id) |>
           bind_rows(df_overall_m) -> df_overall_m
@@ -146,12 +148,12 @@ for(i in seq_len(nrow(events))) {
     # womens times ----
     remote_driver$navigate(paste0("https://components.ifsc-climbing.org/result-complete/?event=", e_id, "&result=6"))
     Sys.sleep(2)
-    
+
     ## overall table
     table_elm <- remote_driver$findElements(using = "css", value = "#table_id")
     table_overall <- read_html(table_elm[[1]]$getElementAttribute("outerHTML")[[1]]) # get html
     df_overall_women <- rvest::html_table(table_overall)[[1]]
-    
+
     ## cleanup table
     if(ncol(df_overall_women) > 0) {
       if(ncol(df_overall_women) == 6) {
@@ -162,9 +164,9 @@ for(i in seq_len(nrow(events))) {
           mutate(false_start_qual = tolower(best_qual) == "false start") |>
           mutate(fall_final = tolower(final) == "fall") |>
           mutate(false_start_final = tolower(final) == "false start") |>
-          mutate(best_qual = ifelse(tolower(best_qual) == "fall", NA, best_qual),
+          mutate(best_qual = ifelse(tolower(best_qual) == "fall", NA, gsub("[^0-9.]", "", best_qual)),
                  final = ifelse(tolower(final) == "fall", NA, final)) |>
-          mutate(best_qual = ifelse(class(best_qual) == "character", parse_number(best_qual), best_qual)) |>
+          mutate(best_qual = ifelse(is.na(best_qual), NA, as.numeric(best_qual))) |>
           mutate(final = as.numeric(final)) |>
           mutate(sex = "F", event_id = e_id) |>
           bind_rows(df_overall_w) -> df_overall_w
@@ -174,14 +176,14 @@ for(i in seq_len(nrow(events))) {
           mutate(fname = tolower(fname), lname = tolower(lname)) |>
           mutate(fall_qual = tolower(best_qual) == "fall") |>
           mutate(false_start_qual = tolower(best_qual) == "false start") |>
-          mutate(best_qual = ifelse(tolower(best_qual) == "fall", NA, best_qual)) |>
-          mutate(best_qual = ifelse(class(best_qual) == "character", parse_number(best_qual), best_qual)) |>
+          mutate(best_qual = ifelse(tolower(best_qual) == "fall", NA, gsub("[^0-9.]", "", parse_number(best_qual)))) |>
+          mutate(best_qual = ifelse(is.na(best_qual), NA, as.numeric(best_qual))) |>
           mutate(final = NA) |>
           mutate(sex = "F", event_id = e_id) |>
           bind_rows(df_overall_w) -> df_overall_w
       }
     }
-    
+
     ## qualifiers
     qual_btn <- remote_driver$findElements(using = 'xpath', "//a[.='Qualification']")
     if(length(qual_btn) > 0) {
@@ -193,7 +195,7 @@ for(i in seq_len(nrow(events))) {
     } else {
       df_qual_women <- data.frame()
     }
-    
+
     ## cleanup
     if(ncol(df_qual_women) > 0) {
       if(ncol(df_qual_women) == 6) {
@@ -218,7 +220,7 @@ for(i in seq_len(nrow(events))) {
           bind_rows(df_qual_w) -> df_qual_w
       }
     }
-    
+
     ## finals
     final_btn <- remote_driver$findElements(using = 'xpath', "//a[.='Final']")
     if(length(final_btn) > 0) {
@@ -230,7 +232,7 @@ for(i in seq_len(nrow(events))) {
     } else {
       df_final_women <- data.frame()
     }
-    
+
     ## cleanup table
     if(ncol(df_final_women) > 0) {
       if("1/8" %in% names(df_final_women)) {
@@ -257,7 +259,7 @@ for(i in seq_len(nrow(events))) {
     }
 
 
-    
+
   }
 }
 
