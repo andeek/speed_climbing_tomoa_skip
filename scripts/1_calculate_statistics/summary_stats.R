@@ -75,6 +75,8 @@ m_tomoa_skip_yearly <- m_times_update |>
             )
 
 
+m_times_update |> filter(rank <= 16) |> group_by(year) |> summarise(num_climbers_final_no_ts = sum(!tomoa_skip), num_climbers_final_ts = sum(tomoa_skip), num_events = length(unique(event_id))) |> mutate(rate_no_ts = num_climbers_final_no_ts / num_events, rate_ts = num_climbers_final_ts / num_events)
+w_times_update |> filter(rank <= 16) |> group_by(year) |> summarise(num_climbers_final_no_ts = sum(!tomoa_skip), num_climbers_final_ts = sum(tomoa_skip), num_events = length(unique(event_id))) |> mutate(rate_no_ts = num_climbers_final_no_ts / num_events, rate_ts = num_climbers_final_ts / num_events)
 
 w_tomoa_skip_yearly <- w_times_update |>
   group_by(year) |>
