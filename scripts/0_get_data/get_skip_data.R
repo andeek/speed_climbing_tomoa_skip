@@ -119,6 +119,9 @@ for(i in 1:nrow(w_times_update)){
   }
 }
 
+## Mark 999 final values as NA
+m_times_update$final <- ifelse(m_times_update$final == 999, NA, m_times_update$final)
+
 ## save objects
 save(m_times_update, file = "data/mTimes_skip.Rdata")
 save(w_times_update, file = "data/wTimes_skip.Rdata")
