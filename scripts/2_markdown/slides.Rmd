@@ -6,18 +6,19 @@ date: "2023-06-09"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
+
+## load required libraries and data
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(cowplot)
+
+load("../../data/mTimes_skip.Rdata")
+load("../../data/wTimes_skip.Rdata")
 ```
 
 ## Best Times Per Event
 ```{r message=FALSE, warning=FALSE}
-
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-
-load("../../data/mTimes_skip.Rdata")
-load("../../data/wTimes_skip.Rdata")
-
 m_times_update |>
   bind_rows(w_times_update) |>
   pivot_longer(cols = c("best_qual", "final", "lane_a", "lane_b", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "time") |>
@@ -30,8 +31,12 @@ m_times_update |>
   facet_wrap(.~sex)
 ```
 
-## All Qualifier Times: Mens and Womens 
+<div class="notes">
+- Always large outliers in 2012
+- Typically hump in 2018 (olympic announcement in 2016)
+</div>
 
+## All Qualifier Times: Mens and Womens 
 ``` {r message = FALSE, warning = FALSE}
 m_times_update |>
   bind_rows(w_times_update) |>
@@ -45,20 +50,89 @@ m_times_update |>
   ggtitle("Qualifying Times for Men and Women")
 ```
 
-## All Final Times: Mens and Womens
+<div class="notes">
+- Similar slight downwards trend in terms of minimum times in each cluster
+- Women's fluctuates slightly more
+</div>
 
+## All Final Times: Mens and Womens
 ``` {r message = FALSE, warning = FALSE}
+# Final times for men and women
 m_times_update |>
   bind_rows(w_times_update) |>
   pivot_longer(cols = c("final", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "final_time") |>
   group_by(fname, lname, sex, tomoa_skip, event_id, year, start_date) |>
-  # There are 3 outliers ~100
+  # There are 3 outliers of ~100 seconds
   filter(!is.na(final_time) & final_time < 95)  |>
   ggplot() +
   geom_jitter(aes(start_date, final_time, color = tomoa_skip)) + 
-  facet_wrap(.~sex)
+  facet_wrap(.~sex) + 
+  ggtitle("Final Times for Men and Women")
+```
+
+<div class="notes">
+- Womens has more dramatic shift in min times from 2012 - 2022
+</div>
+
+## Mens Qualifier vs Final times
+``` {r message = FALSE, warning = FALSE, results = 'hide'}
+
+# Mens qualifier times 
+qual_plot <-m_times_update |>
+  pivot_longer(cols = c("best_qual", "lane_a", "lane_b"), names_to = "round", values_to = "qual_time") |>
+  group_by(fname, lname, tomoa_skip, sex, event_id, year, start_date) |>
+  #Remove outliers -- OK?
+  filter(!is.na(qual_time) & qual_time < 60)  |>
+  ggplot() +
+  geom_jitter(aes(start_date, qual_time, color = tomoa_skip), show.legend = FALSE) + 
+  coord_cartesian(ylim = c(0, 40)) + 
+  ggtitle("Qualifying Times for Men") + 
+  theme(legend.position = "none")
+
+# Mens final times
+final_plot <- m_times_update |>
+  pivot_longer(cols = c("final", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "final_time") |>
+  group_by(fname, lname, sex, tomoa_skip, event_id, year, start_date) |>
+  # There are 3 outliers of ~100 seconds
+  filter(!is.na(final_time) & final_time < 95)  |>
+  ggplot() +
+  geom_jitter(aes(start_date, final_time, color = tomoa_skip), show.legend = FALSE) + 
+  coord_cartesian(ylim = c(0, 40)) + 
+  ggtitle("Final Times for Men")
+
+plot_grid(qual_plot, final_plot, ncol = 2)
 
 ```
 
+## Womens Qualifier Vs Final Times
+``` {r message = FALSE, warning = FALSE, results = 'hide'}
+# Womens qualifier times 
+qual_plot <-w_times_update |>
+  pivot_longer(cols = c("best_qual", "lane_a", "lane_b"), names_to = "round", values_to = "qual_time") |>
+  group_by(fname, lname, tomoa_skip, sex, event_id, year, start_date) |>
+  # Remove outliers
+  filter(!is.na(qual_time) & qual_time < 60)  |>
+  ggplot() +
+  # Hiding legends to prevent compressing
+  geom_jitter(aes(start_date, qual_time, color = tomoa_skip), show.legend = FALSE) + 
+  coord_cartesian(ylim = c(0, 40)) + 
+  ggtitle("Qualifying Times for Women") + 
+  theme(legend.position = "none")
 
+# Womens final times
+final_plot <- w_times_update |>
+  pivot_longer(cols = c("final", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "final_time") |>
+  group_by(fname, lname, sex, tomoa_skip, event_id, year, start_date) |>
+  # There are 3 outliers of ~100 seconds
+  filter(!is.na(final_time) & final_time < 95)  |>
+  ggplot() +
+  geom_jitter(aes(start_date, final_time, color = tomoa_skip), show.legend = FALSE) + 
+  coord_cartesian(ylim = c(0, 40)) + 
+  ggtitle("Final Times for Women")
 
+plot_grid(qual_plot, final_plot, ncol = 2)
+```
+
+<div class="notes">
+- Similar trend between final and qual times, more obvious than mens
+</div>
