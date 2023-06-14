@@ -62,7 +62,7 @@ w_times_update |>
     num_falls_qual_no_ts = sum(fall_qual & !tomoa_skip, na.rm = TRUE),
     num_FS_qual_ts = sum(false_start_qual & tomoa_skip, na.rm = TRUE),
     num_FS_qual_no_ts = sum(false_start_qual & !tomoa_skip, na.rm = TRUE),
-  )
+)
 
 # Falls and false starts in final
 m_times_update |>

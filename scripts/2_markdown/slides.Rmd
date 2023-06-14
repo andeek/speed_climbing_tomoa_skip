@@ -34,6 +34,7 @@ m_times_update |>
 <div class="notes">
 - Always large outliers in 2012
 - Typically hump in 2018 (olympic announcement in 2016)
+- Is using best_qual w/ lane_a and lane_b OK?
 </div>
 
 ## All Qualifier Times: Mens and Womens 
@@ -42,17 +43,18 @@ m_times_update |>
   bind_rows(w_times_update) |>
   pivot_longer(cols = c("best_qual", "lane_a", "lane_b"), names_to = "round", values_to = "qual_time") |>
   group_by(fname, lname, tomoa_skip, sex, event_id, year, start_date) |>
-  #Remove outliers -- OK?
-  filter(!is.na(qual_time) & qual_time < 60)  |>
+  filter(!is.na(qual_time))  |>
   ggplot() +
   geom_jitter(aes(start_date, qual_time, color = tomoa_skip)) + 
   facet_wrap(.~sex) + 
+  coord_cartesian(ylim = c(0, 40)) + 
   ggtitle("Qualifying Times for Men and Women")
 ```
 
 <div class="notes">
-- Similar slight downwards trend in terms of minimum times in each cluster
-- Women's fluctuates slightly more
+- Similar slight downwards trend in terms of minimum times in each "cluster"
+- Women's fluctuates slightly more than mens
+- OK to limit y axis? 
 </div>
 
 ## All Final Times: Mens and Womens
@@ -62,13 +64,14 @@ m_times_update |>
   bind_rows(w_times_update) |>
   pivot_longer(cols = c("final", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "final_time") |>
   group_by(fname, lname, sex, tomoa_skip, event_id, year, start_date) |>
-  # There are 3 outliers of ~100 seconds
-  filter(!is.na(final_time) & final_time < 95)  |>
+  filter(!is.na(final_time)) |>
   ggplot() +
   geom_jitter(aes(start_date, final_time, color = tomoa_skip)) + 
   facet_wrap(.~sex) + 
+  coord_cartesian(ylim = c(0, 40)) + 
   ggtitle("Final Times for Men and Women")
 ```
+
 
 <div class="notes">
 - Womens has more dramatic shift in min times from 2012 - 2022
@@ -81,8 +84,7 @@ m_times_update |>
 qual_plot <-m_times_update |>
   pivot_longer(cols = c("best_qual", "lane_a", "lane_b"), names_to = "round", values_to = "qual_time") |>
   group_by(fname, lname, tomoa_skip, sex, event_id, year, start_date) |>
-  #Remove outliers -- OK?
-  filter(!is.na(qual_time) & qual_time < 60)  |>
+  filter(!is.na(qual_time))  |>
   ggplot() +
   geom_jitter(aes(start_date, qual_time, color = tomoa_skip), show.legend = FALSE) + 
   coord_cartesian(ylim = c(0, 40)) + 
@@ -94,7 +96,7 @@ final_plot <- m_times_update |>
   pivot_longer(cols = c("final", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "final_time") |>
   group_by(fname, lname, sex, tomoa_skip, event_id, year, start_date) |>
   # There are 3 outliers of ~100 seconds
-  filter(!is.na(final_time) & final_time < 95)  |>
+  filter(!is.na(final_time))  |>
   ggplot() +
   geom_jitter(aes(start_date, final_time, color = tomoa_skip), show.legend = FALSE) + 
   coord_cartesian(ylim = c(0, 40)) + 
@@ -110,8 +112,7 @@ plot_grid(qual_plot, final_plot, ncol = 2)
 qual_plot <-w_times_update |>
   pivot_longer(cols = c("best_qual", "lane_a", "lane_b"), names_to = "round", values_to = "qual_time") |>
   group_by(fname, lname, tomoa_skip, sex, event_id, year, start_date) |>
-  # Remove outliers
-  filter(!is.na(qual_time) & qual_time < 60)  |>
+  filter(!is.na(qual_time))  |>
   ggplot() +
   # Hiding legends to prevent compressing
   geom_jitter(aes(start_date, qual_time, color = tomoa_skip), show.legend = FALSE) + 
@@ -123,8 +124,7 @@ qual_plot <-w_times_update |>
 final_plot <- w_times_update |>
   pivot_longer(cols = c("final", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "final_time") |>
   group_by(fname, lname, sex, tomoa_skip, event_id, year, start_date) |>
-  # There are 3 outliers of ~100 seconds
-  filter(!is.na(final_time) & final_time < 95)  |>
+  filter(!is.na(final_time))  |>
   ggplot() +
   geom_jitter(aes(start_date, final_time, color = tomoa_skip), show.legend = FALSE) + 
   coord_cartesian(ylim = c(0, 40)) + 
@@ -136,3 +136,29 @@ plot_grid(qual_plot, final_plot, ncol = 2)
 <div class="notes">
 - Similar trend between final and qual times, more obvious than mens
 </div>
+
+## Users of Tomoa skip
+
+```{r message = FALSE, warning = FALSE}
+# Number of tomoa skip users per start date
+m_times_update |>
+  bind_rows(w_times_update) |>
+  group_by(sex, start_date) |>
+  filter(!is.na(tomoa_skip)) |>
+  summarise(num_ts = sum(tomoa_skip), num_no_ts = sum(!tomoa_skip)) |>
+  ggplot() +
+  geom_point(aes(start_date, num_ts, color = "num_ts")) + 
+  geom_point(aes(start_date, num_no_ts, color = "num_no_ts")) + 
+  facet_wrap(.~sex) +
+  ggtitle("Uses of tomoa skip per date") + 
+  labs(x="Start Date", y = "Count")
+```
+
+<div class = "notes">
+- Not sure how useful this is
+- Mens and womens follow similar patterns
+</div>
+
+
+
+
