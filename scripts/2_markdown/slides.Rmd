@@ -23,12 +23,13 @@ m_times_update |>
   bind_rows(w_times_update) |>
   pivot_longer(cols = c("best_qual", "final", "lane_a", "lane_b", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "time") |>
   group_by(fname, lname, tomoa_skip, sex, event_id, year, start_date) |>
-  # Handle case where all values in best_time are NA 
   summarise(best_time = if (all(is.na(time))) NA else min(time, na.rm = TRUE)) |>
   filter(!is.na(best_time)) |>
   ggplot() +
   geom_jitter(aes(start_date, best_time, color = tomoa_skip)) +
-  facet_wrap(.~sex)
+  facet_wrap(.~sex) + 
+  ggtitle("Best Time Per Event") + 
+  labs(x = "Start Date", y = "Best Time")
 ```
 
 <div class="notes">
@@ -43,12 +44,13 @@ m_times_update |>
   bind_rows(w_times_update) |>
   pivot_longer(cols = c("best_qual", "lane_a", "lane_b"), names_to = "round", values_to = "qual_time") |>
   group_by(fname, lname, tomoa_skip, sex, event_id, year, start_date) |>
-  filter(!is.na(qual_time))  |>
+  filter(!is.na(qual_time)) |>
   ggplot() +
   geom_jitter(aes(start_date, qual_time, color = tomoa_skip)) + 
   facet_wrap(.~sex) + 
   coord_cartesian(ylim = c(0, 40)) + 
-  ggtitle("Qualifying Times for Men and Women")
+  ggtitle("Qualifying Times for Men and Women") +
+  labs(x = "Start Date", y = "Qualifier Time") 
 ```
 
 <div class="notes">
@@ -59,7 +61,6 @@ m_times_update |>
 
 ## All Final Times: Mens and Womens
 ``` {r message = FALSE, warning = FALSE}
-# Final times for men and women
 m_times_update |>
   bind_rows(w_times_update) |>
   pivot_longer(cols = c("final", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "final_time") |>
@@ -69,7 +70,8 @@ m_times_update |>
   geom_jitter(aes(start_date, final_time, color = tomoa_skip)) + 
   facet_wrap(.~sex) + 
   coord_cartesian(ylim = c(0, 40)) + 
-  ggtitle("Final Times for Men and Women")
+  ggtitle("Final Times for Men and Women") + 
+  labs(x = "Start Date", y = "Final Time")
 ```
 
 
@@ -79,7 +81,6 @@ m_times_update |>
 
 ## Mens Qualifier vs Final times
 ``` {r message = FALSE, warning = FALSE, results = 'hide'}
-
 # Mens qualifier times 
 qual_plot <-m_times_update |>
   pivot_longer(cols = c("best_qual", "lane_a", "lane_b"), names_to = "round", values_to = "qual_time") |>
@@ -89,6 +90,7 @@ qual_plot <-m_times_update |>
   geom_jitter(aes(start_date, qual_time, color = tomoa_skip), show.legend = FALSE) + 
   coord_cartesian(ylim = c(0, 40)) + 
   ggtitle("Qualifying Times for Men") + 
+  labs(x = "Start Date", y = "Qualifier Time") + 
   theme(legend.position = "none")
 
 # Mens final times
@@ -100,8 +102,10 @@ final_plot <- m_times_update |>
   ggplot() +
   geom_jitter(aes(start_date, final_time, color = tomoa_skip), show.legend = FALSE) + 
   coord_cartesian(ylim = c(0, 40)) + 
-  ggtitle("Final Times for Men")
+  ggtitle("Final Times for Men") + 
+  labs(x = "Start Date", y = "Qualifier Time") 
 
+#Combine two plots
 plot_grid(qual_plot, final_plot, ncol = 2)
 
 ```
@@ -118,7 +122,8 @@ qual_plot <-w_times_update |>
   geom_jitter(aes(start_date, qual_time, color = tomoa_skip), show.legend = FALSE) + 
   coord_cartesian(ylim = c(0, 40)) + 
   ggtitle("Qualifying Times for Women") + 
-  theme(legend.position = "none")
+  theme(legend.position = "none") + 
+  labs(x = "Start Date", y = "Qualifier Time")
 
 # Womens final times
 final_plot <- w_times_update |>
@@ -128,7 +133,8 @@ final_plot <- w_times_update |>
   ggplot() +
   geom_jitter(aes(start_date, final_time, color = tomoa_skip), show.legend = FALSE) + 
   coord_cartesian(ylim = c(0, 40)) + 
-  ggtitle("Final Times for Women")
+  ggtitle("Final Times for Women") + 
+  labs(x = "Start Date", y = "Final Time")
 
 plot_grid(qual_plot, final_plot, ncol = 2)
 ```

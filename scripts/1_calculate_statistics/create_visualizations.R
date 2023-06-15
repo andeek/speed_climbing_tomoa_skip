@@ -18,7 +18,8 @@ m_times_update |>
   ggplot() +
   geom_jitter(aes(start_date, best_time, color = tomoa_skip)) +
   facet_wrap(.~sex) + 
-  ggtitle("Best times per event")
+  ggtitle("Best Time Per Event") + 
+  labs(x = "Start Date", y = "Best Time")
 
 
 
@@ -32,7 +33,9 @@ m_times_update |>
   geom_jitter(aes(start_date, qual_time, color = tomoa_skip)) + 
   facet_wrap(.~sex) + 
   coord_cartesian(ylim = c(0, 40)) + 
-  ggtitle("Qualifying Times for Men and Women")
+  ggtitle("Qualifying Times for Men and Women") +
+  labs(x = "Start Date", y = "Qualifier Time") 
+  
 
 
 
@@ -46,7 +49,8 @@ m_times_update |>
   geom_jitter(aes(start_date, final_time, color = tomoa_skip)) + 
   facet_wrap(.~sex) + 
   coord_cartesian(ylim = c(0, 40)) + 
-  ggtitle("Final Times for Men and Women")
+  ggtitle("Final Times for Men and Women") + 
+  labs(x = "Start Date", y = "Final Time")
 
 
 
@@ -59,6 +63,7 @@ qual_plot <-m_times_update |>
   geom_jitter(aes(start_date, qual_time, color = tomoa_skip), show.legend = FALSE) + 
   coord_cartesian(ylim = c(0, 40)) + 
   ggtitle("Qualifying Times for Men") + 
+  labs(x = "Start Date", y = "Qualifier Time") + 
   theme(legend.position = "none")
 
 # Mens final times
@@ -70,7 +75,8 @@ final_plot <- m_times_update |>
   ggplot() +
   geom_jitter(aes(start_date, final_time, color = tomoa_skip), show.legend = FALSE) + 
   coord_cartesian(ylim = c(0, 40)) + 
-  ggtitle("Final Times for Men")
+  ggtitle("Final Times for Men") + 
+  labs(x = "Start Date", y = "Qualifier Time") 
 
 #Combine two plots
 plot_grid(qual_plot, final_plot, ncol = 2)
@@ -86,7 +92,8 @@ qual_plot <-w_times_update |>
   geom_jitter(aes(start_date, qual_time, color = tomoa_skip), show.legend = FALSE) + 
   coord_cartesian(ylim = c(0, 40)) + 
   ggtitle("Qualifying Times for Women") + 
-  theme(legend.position = "none")
+  theme(legend.position = "none") + 
+  labs(x = "Start Date", y = "Qualifier Time")
 
 # Womens final times
 final_plot <- w_times_update |>
@@ -96,7 +103,8 @@ final_plot <- w_times_update |>
   ggplot() +
   geom_jitter(aes(start_date, final_time, color = tomoa_skip), show.legend = FALSE) + 
   coord_cartesian(ylim = c(0, 40)) + 
-  ggtitle("Final Times for Women")
+  ggtitle("Final Times for Women") + 
+  labs(x = "Start Date", y = "Final Time")
 
 plot_grid(qual_plot, final_plot, ncol = 2)
 
@@ -116,21 +124,21 @@ m_times_update |>
 
 
 # Number of falls -- Not very good
-m_times_update |>
-  bind_rows(w_times_update) |>
-  group_by(sex, start_date) |>
-  pivot_longer(cols = c("fall_qual", "fall_lane_a", "fall_lane_b", "fall_final"), names_to = "round", values_to = "fall") |>
-  filter(!is.na(fall)) |>
-  summarise(
-    fall_ts = sum(tomoa_skip & fall, na.rm = TRUE),
-    fall_no_ts = sum(!tomoa_skip & fall, na.rm = TRUE)
-  ) |>
-  ggplot() +
-  geom_col(aes(start_date, fall_ts, color = "fall_ts")) +
-  geom_col(aes(start_date, fall_no_ts, color = "fall_no_ts")) +
-  facet_wrap(.~sex) +
-  ggtitle("Number of falls with and without tomoa skip") +
-  labs(x = "Start Date", y = "Count")
+# m_times_update |>
+#   bind_rows(w_times_update) |>
+#   group_by(sex, start_date) |>
+#   pivot_longer(cols = c("fall_qual", "fall_lane_a", "fall_lane_b", "fall_final"), names_to = "round", values_to = "fall") |>
+#   filter(!is.na(fall)) |>
+#   summarise(
+#     fall_ts = sum(tomoa_skip & fall, na.rm = TRUE),
+#     fall_no_ts = sum(!tomoa_skip & fall, na.rm = TRUE)
+#   ) |>
+#   ggplot() +
+#   geom_col(aes(start_date, fall_ts, color = "fall_ts")) +
+#   geom_col(aes(start_date, fall_no_ts, color = "fall_no_ts")) +
+#   facet_wrap(.~sex) +
+#   ggtitle("Number of falls with and without tomoa skip") +
+#   labs(x = "Start Date", y = "Count")
   
   
 
