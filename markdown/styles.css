@@ -1,0 +1,66 @@
+*{
+  box-sizing: border-box;
+}
+
+img{
+  padding: 10px 0px;
+  display: inline-block;
+  margin: 0;
+}
+
+#speed-climbing{
+  width: 50%;
+}
+
+#bouldering{
+  width: 45%;
+  margin-left: 4%;
+}
+
+#sport-climbing{
+  width: 70%;
+}
+
+.grid-container{
+  display: grid;
+  grid-template-columns: 50% 50%;
+  grid-template-rows: 50% 50%;
+}
+
+
+.title-slide {
+  padding-left: 5%;
+}
+
+.subtitle {
+  font-size: 15px;
+}
+
+.container{
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+
+iframe{
+  height: 50vh;
+}
+
+
+#background{
+  margin: 4%;
+}
+
+ul {
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 20px;
+}
+
+ul li {
+  display: block;
+  margin-bottom: 10px;
+}
+
