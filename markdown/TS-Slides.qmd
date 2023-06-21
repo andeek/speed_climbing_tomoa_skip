@@ -2,13 +2,9 @@
 title: "The Fast and the Furious:"
 subtitle: "Tracking the Effect of the Tomoa Skip on Speed Climbing"
 author: ["Caleb Chou", "Andee Kaplan"]
-output: 
-  ioslides_presentation:
-    css: styles.css
-    transition: 0
-date: "`r format(Sys.time(), '%d %B %Y')`"
+format: revealjs
+date: "June 30 2023"
 ---
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -23,59 +19,53 @@ load("./../data/mTimes_skip.Rdata")
 load("./../data/wTimes_skip.Rdata")
 ```
 
+## Background {.center}
 
-## {.flexbox .vcenter}
-<div class = "centered">
-<font size="20">**Background**</font>
-</div>
-
-
-  
+```{css}
+.center h2 {
+  text-align: center;
+}
+```
 
 ## Background
 
-- IFSC hosts climbing competitions around the globe
-- Three disciplines of climbing: Sport, Bouldering, and Speed
-- Announcement of rock climbing in the 2020 olympics caused controversy
+-   IFSC hosts climbing competitions around the globe
+-   Three disciplines of climbing: Sport, Bouldering, and Speed
+-   Announcement of rock climbing in the 2020 olympics caused controversy
 
-<img id="speed-climbing" src="./imgs/speed_climbing.jpeg">
-<img id="bouldering" src="./imgs/bouldering.webp">
-
- 
-  
+![](./imgs/speed_climbing.jpeg){#speed-climbing style="margin: 0; display: inline-block; padding-bottom: 9%;" width="456"} ![](./imgs/bouldering.webp){#bouldering style="padding-left: 5%; margin: 0; display: inline-block; padding-bottom: 9%" width="429"}
 
 ## Tomoa Skip
 
-- Introduced in 2018 by boulderer Tomoa Narasaki
-- A new way to start the route
-- Groundbreaking in that it introduced a bouldering style to speed climbing
+-   Introduced in 2018 by boulderer Tomoa Narasaki
+-   A new way to start the route
+-   Groundbreaking in that it introduced a bouldering style to speed climbing
 
-<iframe src="https://www.youtube.com/embed/wTcZWdzGYD4?start=172" title="YouTube video player"  frameborder="0"                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture;  web-share"                  allowfullscreen>
-</iframe>
+{{< video https://www.youtube.com/embed/wTcZWdzGYD4?start=172 width="500" height="350">}}
 
+## Data {.center}
 
-
-
-##  {.flexbox .vcenter}
-<div class = "centered">
-<font size = "20">**Data**</font>
-</div>
+```{css}
+.center h2 {
+  text-align: center;
+}
+```
 
 ## Data Available
 
-- Climbing event results are stored on the IFSC website
-- Used a web scraper to go through speed climbing events for men and women
-- Tomoa skip data was gathered through watching YouTube videos of IFCS final competitions
-- Used a spreadsheet to mark whether a climber performed the Tomoa Skip or not
-- Tomoa Skip data is only available for climbers in a final
-- Script to indicate whether a climber uses the Tomoa Skip based on if they have used it before
+-   IFCS event results can be scraped
+-   IFCS final videos used to determine who uses Tomoa Skip
+-   Developed script to indicate whether a climber used the Tomoa Skip or not (if data not available)
 
+![](./imgs/IFSC-events.png){#IFSC-events fig-align="center" width="772"}
 
+## Analysis {.center}
 
-## {.flexbox .vcenter}
-<div cslass = "centered">
-<font size = "20">**Analysis**</font>
-</div>
+```{css}
+.center h2 {
+  text-align: center;
+}
+```
 
 ## Users of Tomoa Skip Over Time
 
@@ -97,14 +87,14 @@ m_times_update |>
   theme(legend.title = element_blank())
 ```
 
-<div class="notes">
+::: {.notes}
 - After introduction of TS in 2018, TS is rapidly adopted
 - Use of non-TS beta plumets and TS becomes the norm
-</div>
+:::
 
 ## Best Final vs Best Qualifier Times
 
-``` {r warning = FALSE, out.width = "100%", message = FALSE}
+```{r warning = FALSE, out.width = "100%", message = FALSE}
 #Best Final and Best Qualifier
 m_times_update |>
   # These pivot_longers are producing duplicates
@@ -127,16 +117,17 @@ m_times_update |>
 
 ```
 
-<div class="notes">
-- Not as linear as expected
-- Many Climbers do better in qual than final:
-+ Less stress
-+ Multiple attempts
-+ One fall or FS in final disqualifies
-</div>
+::: {.notes}
+-   Not as linear as expected
+-   Many Climbers do better in qual than final:
+-   Less stress
+-   Multiple attempts
+-   One fall or FS in final disqualifies
+:::
 
 ## Mens Qualifying and Final Times ??
-``` {r warning = FALSE, message = FALSE, out.width = "100%"}
+
+```{r warning = FALSE, message = FALSE, out.width = "100%"}
 # Mens qualifier times 
 qual_plot <-m_times_update |>
   pivot_longer(cols = c("best_qual", "lane_a", "lane_b"), names_to = "round", values_to = "qual_time") |>
@@ -167,8 +158,3 @@ plot_grid(qual_plot, final_plot, ncol = 2)
 ```
 
 ## Next Steps
-
-
-
-
-
