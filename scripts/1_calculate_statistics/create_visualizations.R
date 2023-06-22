@@ -2,6 +2,7 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(cowplot)
+library(knitr)
 
 load("data/mTimes_skip.Rdata")
 load("data/wTimes_skip.Rdata")
@@ -109,8 +110,7 @@ plot_grid(qual_plot, final_plot, ncol = 2)
 
 
 
-# Number of tomoa skip users per start date
-
+## Number of tomoa skip users per start date
 #Label Names:
 label_names <- c('F' = 'Womens', 'M' = 'Mens')
 
@@ -122,13 +122,17 @@ m_times_update |>
   ggplot() +
   geom_point(aes(start_date, num_ts, color = "Tomoa Skip")) + 
   geom_point(aes(start_date, num_no_ts, color = "No Tomoa Skip")) + 
+  geom_smooth(aes(start_date, num_ts, color = "Tomoa Skip"), method = "auto") +
+  geom_smooth(aes(start_date, num_no_ts, color = "No Tomoa Skip"), method = "auto") +
   facet_wrap(.~sex, labeller = as_labeller(label_names)) +
   labs(x="Start Date", y = "Count") + 
   theme(legend.title = element_blank())
 
 
 
+
 #Best Final and Best Qualifier
+label_names <- c('FALSE' = "No Tomoa Skip", 'TRUE' = "Tomoa Skip")
 m_times_update |>
   # These pivot_longers are producing duplicates
   filter(rank <= 16) |>
@@ -141,7 +145,9 @@ m_times_update |>
   ) |>
   filter(!is.na(best_qual) & !is.na(best_final)) |>
   ggplot() +
-  geom_jitter(aes(best_qual, best_final, color = tomoa_skip)) + 
+  geom_jitter(aes(best_qual, best_final, color = tomoa_skip), alpha=0.7, show.legend = FALSE) + 
+  geom_abline() +
+  facet_wrap(.~tomoa_skip, labeller = as_labeller(label_names)) + 
   labs(x = "Best Qualifier Time", y = "Best Final Time") + 
   coord_cartesian(ylim = c(0, 30), xlim = c(0, 30)) + 
   scale_colour_discrete(name  ="",
@@ -149,7 +155,60 @@ m_times_update |>
                         labels=c("Tomoa Skip", "No Tomoa Skip"))
 
 
+
+
   
+#FIXME -- How to make this readable?
+## Days since first tomoa skip
+
+# Find first Tomoa Skip dates and days since first skip
+test_df <-  m_times_update
+test_df$full_name <- paste(m_times_update$fname, m_times_update$lname, sep = " ")
+test_df <- subset(m_times_update, tomoa_skip == TRUE)
+earliest_dates <- aggregate(start_date ~ full_name, data = test_df, FUN = min)
+test_df$days_since_first_skip <- as.numeric(test_df$start_date - earliest_dates$start_date[match(test_df$full_name, earliest_dates$full_name)])
+
+test_df |>
+  pivot_longer(cols = c("best_qual", "final", "lane_a", "lane_b", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "time") |>
+  group_by(fname, lname, tomoa_skip, sex, event_id, year, start_date, days_since_first_skip) |>
+  summarise(best_time = if (all(is.na(time))) NA else min(time, na.rm = TRUE)) |>
+  filter(!is.na(best_time)) |>
+  ggplot() +
+  #geom_jitter(aes(days_since_first_skip, best_time, color = tomoa_skip)) +
+  geom_line(aes(days_since_first_skip, best_time, group = paste(fname, lname))) +
+  labs(x = "Days since first tomoa skip", y = "Best Time")
+
+
+#SECOND VERSION -- INCLUDES DAYS BEFORE FIRST SKIP
+# Find first Tomoa Skip dates and days since first skip
+test_df <- m_times_update
+test_df$full_name <- paste(test_df$fname, test_df$lname, sep = " ")
+true_ts_df <- subset(test_df, tomoa_skip == TRUE)
+earliest_dates <- aggregate(start_date ~ full_name, data = subset_df, FUN = min)
+test_df$days_since_first_skip <- as.numeric(test_df$start_date - earliest_dates$start_date[match(test_df$full_name, earliest_dates$full_name)])
+
+test_df |>
+  pivot_longer(cols = c("best_qual", "final", "lane_a", "lane_b", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "time") |>
+  group_by(fname, lname, tomoa_skip, sex, event_id, year, start_date, days_since_first_skip) |>
+  summarise(best_time = if (all(is.na(time))) NA else min(time, na.rm = TRUE)) |>
+  filter(!is.na(best_time) & !is.na(days_since_first_skip)) |>
+  ggplot() +
+  geom_line(aes(days_since_first_skip, best_time, group = paste(fname, lname))) +
+  labs(x = "Days since first tomoa skip", y = "Best Time")
+
+
+# Fall rate in final by year table
+fall_rate_table <- m_times_update |> 
+  filter(rank <= 16) |> 
+  group_by(year) |> 
+  summarise(
+    num_falls_final_no_ts = sum(!tomoa_skip & fall_final, na.rm = TRUE), 
+    num_falls_final_ts = sum(tomoa_skip & fall_final, na.rm = TRUE), 
+    num_events = length(unique(event_id))
+  ) |> 
+  #mutate(fall_rate_no_ts = num_falls_final_no_ts / num_events, fall_rate_ts = num_falls_final_ts / num_events) 
+  mutate(fall_rate_no_ts = round(num_falls_final_no_ts / num_events, 2), fall_rate_ts = round(num_falls_final_ts / num_events, 2))
+
   
   
 

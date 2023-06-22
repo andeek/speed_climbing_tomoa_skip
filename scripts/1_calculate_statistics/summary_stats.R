@@ -110,6 +110,18 @@ w_times_update |>
   mutate(rate_no_ts = num_climbers_final_no_ts / num_events, rate_ts = num_climbers_final_ts / num_events)
 
 
+# Fall rate in final by year table
+m_times_update |> 
+  filter(rank <= 16) |> 
+  group_by(year) |> 
+  summarise(
+    num_falls_final_no_ts = sum(!tomoa_skip & fall_final, na.rm = TRUE), 
+    num_falls_final_ts = sum(tomoa_skip & fall_final, na.rm = TRUE), 
+    num_events = length(unique(event_id))
+  ) |> 
+  mutate(fall_rate_no_ts = num_falls_final_no_ts / num_events, fall_rate_ts = num_falls_final_ts / num_events)
+
+
 
 
 

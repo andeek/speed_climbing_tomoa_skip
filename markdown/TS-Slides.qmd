@@ -14,6 +14,7 @@ library(ggplot2)
 library(dplyr)
 library(tidyr)
 library(cowplot)
+library(knitr)
 
 load("./../data/mTimes_skip.Rdata")
 load("./../data/wTimes_skip.Rdata")
@@ -31,9 +32,16 @@ load("./../data/wTimes_skip.Rdata")
 
 -   IFSC hosts climbing competitions around the globe
 -   Three disciplines of climbing: Sport, Bouldering, and Speed
--   Announcement of rock climbing in the 2020 olympics caused controversy
+-   Announcement of rock climbing in the 2020 Olympics caused controversy
 
-![](./imgs/speed_climbing.jpeg){#speed-climbing style="margin: 0; display: inline-block; padding-bottom: 9%;" width="456"} ![](./imgs/bouldering.webp){#bouldering style="padding-left: 5%; margin: 0; display: inline-block; padding-bottom: 9%" width="429"}
+![](./imgs/sport-climbing.jpeg){style="padding-left: 5%; margin: 0; display: inline-block; padding-bottom: 10%;" width="470"} ![](./imgs/bouldering.webp){#bouldering style="padding-left: 5%; margin: 0; display: inline-block; padding-bottom: 10%;" width="429"}
+
+## Speed Climbing
+
+-   Head to head races, climbers are continuously eliminated until final round
+-   Same route every time
+
+![](./imgs/speed_climbing.jpeg){fig-align="center" #speed-climbing style="margin: 0; display: inline-block; padding-bottom: 9%;" width="456"}
 
 ## Tomoa Skip
 
@@ -53,8 +61,8 @@ load("./../data/wTimes_skip.Rdata")
 
 ## Data Available
 
--   IFCS event results can be scraped
--   IFCS final videos used to determine who uses Tomoa Skip
+-   IFSC event results can be scraped
+-   IFSC final videos used to determine who uses Tomoa Skip
 -   Developed script to indicate whether a climber used the Tomoa Skip or not (if data not available)
 
 ![](./imgs/IFSC-events.png){#IFSC-events fig-align="center" width="772"}
@@ -67,9 +75,9 @@ load("./../data/wTimes_skip.Rdata")
 }
 ```
 
-## Users of Tomoa Skip Over Time
+## Users of Tomoa Skip Over Time {.center}
 
-```{r message = FALSE, out.width="105%", warning = FALSE}
+```{r message = FALSE, out.width="105%", warning = FALSE, fig.align='center'}
 #Label Names:
 label_names <- c('F' = 'Womens', 'M' = 'Mens')
 
@@ -82,20 +90,25 @@ m_times_update |>
   ggplot() +
   geom_point(aes(start_date, num_ts, color = "Tomoa Skip")) + 
   geom_point(aes(start_date, num_no_ts, color = "No Tomoa Skip")) + 
+  geom_smooth(aes(start_date, num_ts, color = "Tomoa Skip"), method = "auto") +
+  geom_smooth(aes(start_date, num_no_ts, color = "No Tomoa Skip"), method = "auto") +
   facet_wrap(.~sex, labeller = as_labeller(label_names)) +
   labs(x="Start Date", y = "Count") + 
   theme(legend.title = element_blank())
+
 ```
 
-::: {.notes}
-- After introduction of TS in 2018, TS is rapidly adopted
-- Use of non-TS beta plumets and TS becomes the norm
+::: notes
+-   After introduction of TS in 2018, TS is rapidly adopted
+-   Use of non-TS beta plumets and TS becomes the norm
 :::
 
-## Best Final vs Best Qualifier Times
+## Best Final vs Best Qualifier Times {.center}
 
 ```{r warning = FALSE, out.width = "100%", message = FALSE}
+
 #Best Final and Best Qualifier
+label_names <- c('FALSE' = "No Tomoa Skip", 'TRUE' = "Tomoa Skip")
 m_times_update |>
   # These pivot_longers are producing duplicates
   filter(rank <= 16) |>
@@ -108,16 +121,19 @@ m_times_update |>
   ) |>
   filter(!is.na(best_qual) & !is.na(best_final)) |>
   ggplot() +
-  geom_jitter(aes(best_qual, best_final, color = tomoa_skip)) + 
+  geom_jitter(aes(best_qual, best_final, color = tomoa_skip), alpha=0.7, show.legend = FALSE) + 
+  geom_abline() +
+  facet_wrap(.~tomoa_skip, labeller = as_labeller(label_names)) + 
   labs(x = "Best Qualifier Time", y = "Best Final Time") + 
   coord_cartesian(ylim = c(0, 30), xlim = c(0, 30)) + 
-  scale_color_discrete(name  ="",
+  scale_colour_discrete(name  ="",
                         breaks=c(TRUE, FALSE),
                         labels=c("Tomoa Skip", "No Tomoa Skip"))
 
+
 ```
 
-::: {.notes}
+::: notes
 -   Not as linear as expected
 -   Many Climbers do better in qual than final:
 -   Less stress
@@ -125,36 +141,43 @@ m_times_update |>
 -   One fall or FS in final disqualifies
 :::
 
-## Mens Qualifying and Final Times ??
+## Falls Rates In Finals By Year {.center}
 
-```{r warning = FALSE, message = FALSE, out.width = "100%"}
-# Mens qualifier times 
-qual_plot <-m_times_update |>
-  pivot_longer(cols = c("best_qual", "lane_a", "lane_b"), names_to = "round", values_to = "qual_time") |>
-  group_by(fname, lname, tomoa_skip, sex, event_id, year, start_date) |>
-  filter(!is.na(qual_time))  |>
-  ggplot() +
-  geom_jitter(aes(start_date, qual_time, color = tomoa_skip), show.legend = FALSE) + 
-  coord_cartesian(ylim = c(0, 40)) + 
-  ggtitle("Qualifying Times for Men") + 
-  labs(x = "Start Date", y = "Qualifier Time") + 
-  theme(legend.position = "none")
+```{css}
+#| echo: false
 
-# Mens final times
-final_plot <- m_times_update |>
-  pivot_longer(cols = c("final", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "final_time") |>
-  group_by(fname, lname, sex, tomoa_skip, event_id, year, start_date) |>
-  # There are 3 outliers of ~100 seconds
-  filter(!is.na(final_time))  |>
-  ggplot() +
-  geom_jitter(aes(start_date, final_time, color = tomoa_skip), show.legend = FALSE) + 
-  coord_cartesian(ylim = c(0, 40)) + 
-  ggtitle("Final Times for Men") + 
-  labs(x = "Start Date", y = "Final Time") 
-
-#Combine two plots
-plot_grid(qual_plot, final_plot, ncol = 2) 
+.reveal table {
+  font-size: 1.4rem;
+  margin: 0;
+  padding: 0;
+}
 
 ```
 
+```{r message = FALSE, warning = FALSE}
+# Fall rate in final by year table
+fall_rate_table <- m_times_update |> 
+  filter(rank <= 16) |> 
+  group_by(year) |> 
+  summarise(
+    num_falls_final_no_ts = sum(!tomoa_skip & fall_final, na.rm = TRUE), 
+    num_falls_final_ts = sum(tomoa_skip & fall_final, na.rm = TRUE), 
+    num_events = length(unique(event_id))
+  ) |> 
+   mutate(fall_rate_no_ts = round(num_falls_final_no_ts / num_events, 3),
+          fall_rate_ts = round(num_falls_final_ts / num_events, 3))
+
+
+knitr::kable(
+  fall_rate_table,
+  col.names = c('Year', 'Final Falls (No TS)', 'Final Falls (TS)', 'Number of Events', 'Fall Rate (No TS)', 'Fall Rate (TS)')
+)
+```
+
 ## Next Steps
+
+-   Modeling:
+    -   Does Tomoa Skip have a statistically signifigant effect on times?
+    -   Are climbers statistically slower in finals?
+-   Woman's data
+-   More data
