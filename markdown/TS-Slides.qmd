@@ -41,15 +41,19 @@ load("./../data/wTimes_skip.Rdata")
 -   Head to head races, climbers are continuously eliminated until final round
 -   Same route every time
 
-![](./imgs/speed_climbing.jpeg){fig-align="center" #speed-climbing style="margin: 0; display: inline-block; padding-bottom: 9%;" width="456"}
+![](./imgs/speed_climbing.jpeg){#speed-climbing fig-align="center" style="margin: 0; display: inline-block; padding-bottom: 9%;" width="456"}
 
 ## Tomoa Skip
 
 -   Introduced in 2018 by boulderer Tomoa Narasaki
+
 -   A new way to start the route
+
 -   Groundbreaking in that it introduced a bouldering style to speed climbing
 
+<center>
 {{< video https://www.youtube.com/embed/wTcZWdzGYD4?start=172 width="500" height="350">}}
+<center>
 
 ## Data {.center}
 
@@ -65,7 +69,7 @@ load("./../data/wTimes_skip.Rdata")
 -   IFSC final videos used to determine who uses Tomoa Skip
 -   Developed script to indicate whether a climber used the Tomoa Skip or not (if data not available)
 
-![](./imgs/IFSC-events.png){#IFSC-events fig-align="center" width="772"}
+![](./imgs/IFSC-events.png){#IFSC-events fig-align="center" width="900" height="528"}
 
 ## Analysis {.center}
 

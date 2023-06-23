@@ -179,12 +179,13 @@ test_df |>
   labs(x = "Days since first tomoa skip", y = "Best Time")
 
 
-#SECOND VERSION -- INCLUDES DAYS BEFORE FIRST SKIP
+
+
 # Find first Tomoa Skip dates and days since first skip
 test_df <- m_times_update
 test_df$full_name <- paste(test_df$fname, test_df$lname, sep = " ")
 true_ts_df <- subset(test_df, tomoa_skip == TRUE)
-earliest_dates <- aggregate(start_date ~ full_name, data = subset_df, FUN = min)
+earliest_dates <- aggregate(start_date ~ full_name, data = true_ts_df, FUN = min)
 test_df$days_since_first_skip <- as.numeric(test_df$start_date - earliest_dates$start_date[match(test_df$full_name, earliest_dates$full_name)])
 
 test_df |>
@@ -194,6 +195,7 @@ test_df |>
   filter(!is.na(best_time) & !is.na(days_since_first_skip)) |>
   ggplot() +
   geom_line(aes(days_since_first_skip, best_time, group = paste(fname, lname))) +
+  ggtitle("Best Time Per Event") +
   labs(x = "Days since first tomoa skip", y = "Best Time")
 
 
