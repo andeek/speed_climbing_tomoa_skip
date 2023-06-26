@@ -164,7 +164,7 @@ m_times_update |>
 # Find first Tomoa Skip dates and days since first skip
 test_df <-  m_times_update
 test_df$full_name <- paste(m_times_update$fname, m_times_update$lname, sep = " ")
-test_df <- subset(m_times_update, tomoa_skip == TRUE)
+test_df <- subset(test_df, tomoa_skip == TRUE)
 earliest_dates <- aggregate(start_date ~ full_name, data = test_df, FUN = min)
 test_df$days_since_first_skip <- as.numeric(test_df$start_date - earliest_dates$start_date[match(test_df$full_name, earliest_dates$full_name)])
 
@@ -191,12 +191,20 @@ test_df$days_since_first_skip <- as.numeric(test_df$start_date - earliest_dates$
 test_df |>
   pivot_longer(cols = c("best_qual", "final", "lane_a", "lane_b", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "time") |>
   group_by(fname, lname, tomoa_skip, sex, event_id, year, start_date, days_since_first_skip) |>
-  summarise(best_time = if (all(is.na(time))) NA else min(time, na.rm = TRUE)) |>
-  filter(!is.na(best_time) & !is.na(days_since_first_skip)) |>
+  mutate(best_time = if (all(is.na(time))) NA else min(time, na.rm = TRUE)) |>
+  group_by(fname, lname) |> 
+  mutate(count = length(unique(event_id))) |>  
+  filter(!is.na(best_time) & !is.na(days_since_first_skip) & count > 10 & time < 50) |>
+  # filter(!is.na(days_since_first_skip) & count > 10 & time < 50) |> 
   ggplot() +
-  geom_line(aes(days_since_first_skip, best_time, group = paste(fname, lname))) +
+  geom_vline(aes(xintercept = 0), lty = 2, color = "red") +
+  geom_point(aes(days_since_first_skip, time, group = paste(fname, lname)), alpha = 0.4) +
+  geom_line(aes(days_since_first_skip, best_time, group = paste(fname, lname), color = paste(fname, lname))) +
+  facet_wrap(~paste(fname, lname)) +
   ggtitle("Best Time Per Event") +
-  labs(x = "Days since first tomoa skip", y = "Best Time")
+  labs(x = "Days since first tomoa skip", y = "Best Time") +
+  theme(legend.position = "none") +
+  ylim(c(4.99, 8))
 
 
 # Fall rate in final by year table
