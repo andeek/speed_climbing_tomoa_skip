@@ -38,8 +38,9 @@ load("./../data/wTimes_skip.Rdata")
 
 ## Speed Climbing
 
--   Head to head races, climbers are continuously eliminated until final round
--   Same route every time
++ Qualifier: Climbers have two attempts, their best score is considered
++ Final: Head to head races, competeitors who win race proceed to next round
+*   Same route every time
 
 ![](./imgs/speed_climbing.jpeg){#speed-climbing fig-align="center" style="margin: 0; display: inline-block; padding-bottom: 9%;" width="456"}
 
@@ -125,8 +126,8 @@ m_times_update |>
   ) |>
   filter(!is.na(best_qual) & !is.na(best_final)) |>
   ggplot() +
-  geom_jitter(aes(best_qual, best_final, color = tomoa_skip), alpha=0.7, show.legend = FALSE) + 
   geom_abline() +
+  geom_jitter(aes(best_qual, best_final, color = tomoa_skip), alpha=0.7, show.legend = FALSE) + 
   facet_wrap(.~tomoa_skip, labeller = as_labeller(label_names)) + 
   labs(x = "Best Qualifier Time", y = "Best Final Time") + 
   coord_cartesian(ylim = c(0, 30), xlim = c(0, 30)) + 
@@ -144,6 +145,39 @@ m_times_update |>
 -   Multiple attempts
 -   One fall or FS in final disqualifies
 :::
+
+
+## Progression of Best Time Per Event Since First Tomoa Skip
+```{r warning = FALSE, message= FALSE}
+
+# Find first Tomoa Skip dates and days since first skip
+test_df <- m_times_update
+test_df$full_name <- paste(test_df$fname, test_df$lname, sep = " ")
+true_ts_df <- subset(test_df, tomoa_skip == TRUE)
+earliest_dates <- aggregate(start_date ~ full_name, data = true_ts_df, FUN = min)
+test_df$days_since_first_skip <- as.numeric(test_df$start_date - earliest_dates$start_date[match(test_df$full_name, earliest_dates$full_name)])
+
+test_df |>
+  pivot_longer(cols = c("best_qual", "final", "lane_a", "lane_b", "first_round", "quarter", "semi", "small_final", "big_final"), names_to = "round", values_to = "time") |>
+  group_by(fname, lname, tomoa_skip, sex, event_id, year, start_date, days_since_first_skip) |>
+  mutate(best_time = if (all(is.na(time))) NA else min(time, na.rm = TRUE)) |>
+  group_by(fname, lname) |> 
+  mutate(count = length(unique(event_id))) |>  
+  filter(!is.na(best_time) & !is.na(days_since_first_skip) & count > 10 & time < 50) |>
+  # filter(!is.na(days_since_first_skip) & count > 10 & time < 50) |> 
+  filter(lname == "brosler" | fname == "reza" | fname == "veddriq") |>
+  ggplot() +
+  geom_vline(aes(xintercept = 0), lty = 2, color = "red") +
+  geom_point(aes(days_since_first_skip, time, group = paste(fname, lname)), alpha = 0.4) +
+  geom_line(aes(days_since_first_skip, best_time, group = paste(fname, lname), color = paste(fname, lname))) +
+
+  facet_wrap(~paste(fname, lname)) +
+  ggtitle("Best Time Per Event") +
+  labs(x = "Days since first tomoa skip", y = "Best Time") +
+  theme(legend.position = "none") +
+  ylim(c(4.99, 8))
+
+```
 
 ## Falls Rates In Finals By Year {.center}
 
@@ -166,15 +200,18 @@ fall_rate_table <- m_times_update |>
   summarise(
     num_falls_final_no_ts = sum(!tomoa_skip & fall_final, na.rm = TRUE), 
     num_falls_final_ts = sum(tomoa_skip & fall_final, na.rm = TRUE), 
+    total_ts = sum(tomoa_skip),
+    total_no_ts = sum(!tomoa_skip),
     num_events = length(unique(event_id))
   ) |> 
-   mutate(fall_rate_no_ts = round(num_falls_final_no_ts / num_events, 3),
-          fall_rate_ts = round(num_falls_final_ts / num_events, 3))
+   mutate(fall_rate_no_ts = round(num_falls_final_no_ts / (total_no_ts * num_events), 3),
+          fall_rate_ts = round(num_falls_final_ts / (total_ts * num_events), 3))
 
 
+options(knitr.kable.NA = "-")
 knitr::kable(
   fall_rate_table,
-  col.names = c('Year', 'Final Falls (No TS)', 'Final Falls (TS)', 'Number of Events', 'Fall Rate (No TS)', 'Fall Rate (TS)')
+  col.names = c('Year', 'Final Falls (No TS)', 'Final Falls (TS)', 'Total TS', 'Total No TS', 'Number of Events', 'Fall Rate (No TS)', 'Fall Rate (TS)'),
 )
 ```
 
@@ -183,5 +220,6 @@ knitr::kable(
 -   Modeling:
     -   Does Tomoa Skip have a statistically signifigant effect on times?
     -   Are climbers statistically slower in finals?
+    -   Is the Tomoa Skip riskier?
 -   Woman's data
 -   More data

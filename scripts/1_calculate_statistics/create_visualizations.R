@@ -181,6 +181,9 @@ test_df |>
 
 
 
+## Progression of Best Time Per Event Since First Tomoa Skip
+```{r warning = FALSE, message= FALSE}
+
 # Find first Tomoa Skip dates and days since first skip
 test_df <- m_times_update
 test_df$full_name <- paste(test_df$fname, test_df$lname, sep = " ")
@@ -196,30 +199,36 @@ test_df |>
   mutate(count = length(unique(event_id))) |>  
   filter(!is.na(best_time) & !is.na(days_since_first_skip) & count > 10 & time < 50) |>
   # filter(!is.na(days_since_first_skip) & count > 10 & time < 50) |> 
+  filter(lname == "brosler" | fname == "reza" | fname == "veddriq") |>
   ggplot() +
   geom_vline(aes(xintercept = 0), lty = 2, color = "red") +
   geom_point(aes(days_since_first_skip, time, group = paste(fname, lname)), alpha = 0.4) +
   geom_line(aes(days_since_first_skip, best_time, group = paste(fname, lname), color = paste(fname, lname))) +
+  
   facet_wrap(~paste(fname, lname)) +
   ggtitle("Best Time Per Event") +
   labs(x = "Days since first tomoa skip", y = "Best Time") +
   theme(legend.position = "none") +
   ylim(c(4.99, 8))
 
+```
 
-# Fall rate in final by year table
+
+# Fall rate table
 fall_rate_table <- m_times_update |> 
   filter(rank <= 16) |> 
   group_by(year) |> 
   summarise(
     num_falls_final_no_ts = sum(!tomoa_skip & fall_final, na.rm = TRUE), 
     num_falls_final_ts = sum(tomoa_skip & fall_final, na.rm = TRUE), 
+    total_ts = sum(tomoa_skip),
+    total_no_ts = sum(!tomoa_skip),
     num_events = length(unique(event_id))
   ) |> 
-  #mutate(fall_rate_no_ts = num_falls_final_no_ts / num_events, fall_rate_ts = num_falls_final_ts / num_events) 
-  mutate(fall_rate_no_ts = round(num_falls_final_no_ts / num_events, 2), fall_rate_ts = round(num_falls_final_ts / num_events, 2))
+  mutate(fall_rate_no_ts = round(num_falls_final_no_ts / (total_no_ts * num_events), 3),
+         fall_rate_ts = round(num_falls_final_ts / (total_ts * num_events), 3))
 
-  
+
   
 
 
