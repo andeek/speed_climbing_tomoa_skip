@@ -2,7 +2,9 @@
 title: "The Fast and the Furious:"
 subtitle: "Tracking the Effect of the Tomoa Skip on Speed Climbing"
 author: ["Caleb Chou", "Andee Kaplan"]
-format: revealjs
+format: 
+  revealjs:
+    embed-resources: true
 date: "June 30 2023"
 ---
 
