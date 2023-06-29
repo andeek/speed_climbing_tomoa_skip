@@ -17,6 +17,7 @@ library(dplyr)
 library(tidyr)
 library(cowplot)
 library(knitr)
+library(kableExtra)
 
 load("./../data/mTimes_skip.Rdata")
 load("./../data/wTimes_skip.Rdata")
@@ -41,7 +42,7 @@ load("./../data/wTimes_skip.Rdata")
 ## Speed Climbing
 
 + Qualifier: Climbers have two attempts, their best score is considered
-+ Final: Head to head races, competeitors who win race proceed to next round
++ Final: Head to head races, competitors who win race proceed to next round
 *   Same route every time
 
 ![](./imgs/speed_climbing.jpeg){#speed-climbing fig-align="center" style="margin: 0; display: inline-block; padding-bottom: 9%;" width="456"}
@@ -202,8 +203,8 @@ fall_rate_table <- m_times_update |>
   summarise(
     num_falls_final_no_ts = sum(!tomoa_skip & fall_final, na.rm = TRUE), 
     num_falls_final_ts = sum(tomoa_skip & fall_final, na.rm = TRUE), 
-    total_ts = sum(tomoa_skip),
     total_no_ts = sum(!tomoa_skip),
+    total_ts = sum(tomoa_skip),
     num_events = length(unique(event_id))
   ) |> 
    mutate(fall_rate_no_ts = round(num_falls_final_no_ts / (total_no_ts * num_events), 3),
@@ -213,14 +214,16 @@ fall_rate_table <- m_times_update |>
 options(knitr.kable.NA = "-")
 knitr::kable(
   fall_rate_table,
-  col.names = c('Year', 'Final Falls (No TS)', 'Final Falls (TS)', 'Total TS', 'Total No TS', 'Number of Events', 'Fall Rate (No TS)', 'Fall Rate (TS)'),
-)
+  col.names = c('Year', 'Final Falls (No TS)', 'Final Falls (TS)', 'Total No TS', 'Total TS', 'Number of Events', 'Fall Rate (No TS)', 'Fall Rate (TS)'),
+) |>
+  kable_styling() |>
+  column_spec(7:8, background = "yellow")
 ```
 
 ## Next Steps
 
 -   Modeling:
-    -   Does Tomoa Skip have a statistically signifigant effect on times?
+    -   Does Tomoa Skip have a statistically significant effect on times?
     -   Are climbers statistically slower in finals?
     -   Is the Tomoa Skip riskier?
 -   Woman's data
