@@ -27,45 +27,22 @@ for (row in rows) {
   # Find the first anchor tag within the row
   anchor_tag <- html_node(row, "a")
   
-  # Check if an anchor tag is found
   if (!is.null(anchor_tag)) {
     # Get the link URL
     link_url <- html_attr(anchor_tag, "href")
     
-    # Navigate to the link URL
+    # Navigate to athlete page
     remote_driver$navigate(link_url)
-    Sys.sleep(5)  # Increase sleep duration if needed
+    Sys.sleep(5)  
     
     # Scrape data on the navigated page
-    tryCatch({
-      # Attempt to find the .name element
-      name_element <- remote_driver$findElement(using = "css", value = ".name")
-      
-      # Check if the element is found
-      if (!is.null(name_element)) {
-        climber_name <- name_element$getElementText()
-        
-        # Create a new row with the climber name
-        new_row <- data.frame(name = climber_name, stringsAsFactors = FALSE)
-        
-        # Add the new row to the dataframe
-        df_heights_men <- rbind(df_heights_men, new_row)
-      } else {
-        # Handle the case when .name element is not found
-        cat("Error: .name element not found on the page\n")
-      }
-    }, error = function(e) {
-      # Handle any other errors gracefully (e.g., print an error message)
-      cat("Error occurred while scraping data:", conditionMessage(e), "\n")
-    })
     
-    # Go back to the previous page
+    
+    # Go back to table page
     remote_driver$goBack()
-    Sys.sleep(3)  # Wait for the page to load
+    Sys.sleep(3)
   }
 }
-
-
 
 
 # Close the remote driver and stop the Selenium server
