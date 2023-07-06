@@ -6,7 +6,7 @@ driver <- rsDriver(browser = "firefox", chromever = NULL, iedrver = NULL, verbos
 remote_driver <- driver$client
 
 # Navigate to the webpage
-remote_driver$navigate("https://components.ifsc-climbing.org/ranking-complete/?cup=&category=2#")
+remote_driver$navigate("https://components.ifsc-climbing.org/ranking-complete/?cup=&category=2&year=2022") # TODO: loop through multiple years to get more climbers
 Sys.sleep(3)
 
 # Find table element
@@ -18,6 +18,7 @@ table_html <- table_elm$getElementAttribute("innerHTML")[[1]]
 # Parse the HTML table
 table <- read_html(table_html)
 rows <- html_nodes(table, "tr")
+rows <- rows[-1]
 
 # Empty storage
 df_heights_men <- data.frame(name = character())
@@ -36,7 +37,13 @@ for (row in rows) {
     Sys.sleep(5)  
     
     # Scrape data on the navigated page
+    personal_info_subtitle <- remote_driver$findElements(using = "css", value = ".personal-info .subtitle")
+    personal_info_paragraph <- remote_driver$findElements(using = "css", value = ".personal-info .paragraph")
     
+    ### TODO: loop through and get the text elements 
+    ## find the "height" index -> grab the heights
+    
+    # personal_info_subtitle[[1]]$getElementText()
     
     # Go back to table page
     remote_driver$goBack()
