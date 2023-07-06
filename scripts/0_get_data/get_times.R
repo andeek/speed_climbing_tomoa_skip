@@ -34,11 +34,13 @@ for(i in seq_len(nrow(events))) {
     ## mens times ----
     remote_driver$navigate(paste0("https://components.ifsc-climbing.org/result-complete/?event=", e_id, "&result=2"))
     Sys.sleep(2)
-
+    
     ## overall table
     table_elm <- remote_driver$findElements(using = "css", value = "#table_id")
     table_overall <- read_html(table_elm[[1]]$getElementAttribute("outerHTML")[[1]]) # get html
     df_overall_men <- rvest::html_table(table_overall)[[1]]
+
+
 
     ## cleanup table
     if(ncol(df_overall_men) > 0) {
