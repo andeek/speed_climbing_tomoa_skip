@@ -21,7 +21,8 @@ rows <- html_nodes(table, "tr")
 rows <- rows[-1]
 
 # Empty storage
-df_heights_men <- data.frame(name = character())
+df_heights_men <- data.frame(name = character(), height = numeric(), armspan = numeric())
+colnames(df_heights_men) <- c("name", "height", "armspan")
 
 # Iterate through each row in the table
 for (row in rows) {
@@ -39,11 +40,29 @@ for (row in rows) {
     # Scrape data on the navigated page
     personal_info_subtitle <- remote_driver$findElements(using = "css", value = ".personal-info .subtitle")
     personal_info_paragraph <- remote_driver$findElements(using = "css", value = ".personal-info .paragraph")
-    
-    ### TODO: loop through and get the text elements 
-    ## find the "height" index -> grab the heights
+    climber_name <- remote_driver$findElement(using = "css", value = ".name")
+    climber_name <- climber_name$getElementText()
+    height <- ""
+    arm_span <- ""
     
     # personal_info_subtitle[[1]]$getElementText()
+    # Loop through and get the text elements
+    for (i in 1:length(personal_info_subtitle)) {
+      if (length(personal_info_subtitle) > 0) {
+        print(personal_info_subtitle)
+        subtitle_text <- personal_info_subtitle[[i]]$getElementText()
+        if (subtitle_text == "HEIGHT") {
+          height <- personal_info_paragraph[[i]]$getElementText()
+        } else if (subtitle_text == "ARM SPAN") {
+          arm_span <- personal_info_paragraph[[i]]$getElementText()
+        }
+      }
+    }
+    
+    height <- ifelse(height=="", NA, as.numeric(height))
+    arm_span <- ifelse(height=="", NA, as.numeric(arm_span))
+    
+    df_heights_men <- rbind(df_heights_men, c(climber_name, height, arm_span))
     
     # Go back to table page
     remote_driver$goBack()
